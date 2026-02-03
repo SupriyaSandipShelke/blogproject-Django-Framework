@@ -1,0 +1,44 @@
+{% extends 'blog/base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<style>
+    .post-img {
+        height: 200px;
+        object-fit: cover;
+    }
+</style>
+
+<h3 class="mb-4">Latest Blog Posts</h3>
+
+<form method="GET" class="mb-4">
+  <input type="text" name="q" class="form-control" placeholder="Search posts...">
+</form>
+
+<div class="row">
+  {% for post in posts %}
+  <div class="col-md-4">
+    <div class="card shadow mb-4">
+      {% if post.image %}
+        <img src="{{ post.image.url }}" class="card-img-top post-img">
+      {% else %}
+        <div class="card-img-top post-img" style="background-color: #e9ecef; display: flex; align-items: center; justify-content: center;">
+          <span class="text-muted">No Image</span>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <h5>{{ post.title }}</h5>
+        <p class="text-muted">
+            {{ post.category.name }} | {{ post.author.username }}
+        </p>
+        <a href="{% url 'post_detail' post.id %}" class="btn btn-primary btn-sm">
+            Read More
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p>No posts available.</p>
+  {% endfor %}
+</div>
+{% endblock %}
