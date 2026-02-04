@@ -1,13 +1,92 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-<div class="card shadow p-4">
-  <h4>Create / Edit Blog Post</h4>
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Create / Edit Blog Post</h3>
+        <a href="{% url 'home' %}" class="text-muted">← Back to Home</a>
+      </div>
 
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-success">Save</button>
-  </form>
+      <form method="POST" enctype="multipart/form-data" id="postForm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_title" class="form-label">Title</label>
+          {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_content" class="form-label">Content</label>
+          {{ form.content }}
+          <div class="form-text mt-2">Estimated reading time: <span id="readingTime">—</span> min</div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="id_image" class="form-label">Feature Image</label>
+            {{ form.image }}
+            <div class="mt-2">
+              <img id="imagePreview" src="{% if form.instance and form.instance.image %}{{ form.instance.image.url }}{% endif %}" alt="" style="max-width:100%; max-height:240px; border-radius:8px; display: {% if form.instance and form.instance.image %}block{% else %}none{% endif %};" />
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="id_category" class="form-label">Category</label>
+            {{ form.category }}
+
+            <div class="mt-3">
+              <label class="form-label">Visibility</label>
+              <div class="form-check form-switch">
+                {{ form.is_published }}
+                <label class="form-check-label" for="id_publish_toggle">Published</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Image preview
+  const imageInput = document.getElementById('id_image_input');
+  const imagePreview = document.getElementById('imagePreview');
+  if (imageInput) {
+    imageInput.addEventListener('change', function(e) {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        imagePreview.src = ev.target.result;
+        imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Reading time estimate
+  function updateReadingTime() {
+    const content = document.getElementById('id_content');
+    if (!content) return;
+    const words = content.value.trim().split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.round(words / 200));
+    document.getElementById('readingTime').textContent = minutes;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const content = document.getElementById('id_content');
+    if (content) {
+      updateReadingTime();
+      content.addEventListener('input', updateReadingTime);
+    }
+  });
+</script>
 {% endblock %}
